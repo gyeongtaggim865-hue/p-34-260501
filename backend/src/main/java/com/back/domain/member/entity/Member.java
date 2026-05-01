@@ -3,20 +3,19 @@ package com.back.domain.member.entity;
 import com.back.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
 @Entity
-@Getter
 @NoArgsConstructor
 public class Member extends BaseEntity {
 
     @Column(unique = true)
     private String username;
     private String password;
+
     private String nickname;
     @Column(unique = true)
     private String apiKey;
@@ -49,4 +48,21 @@ public class Member extends BaseEntity {
             return List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
 }

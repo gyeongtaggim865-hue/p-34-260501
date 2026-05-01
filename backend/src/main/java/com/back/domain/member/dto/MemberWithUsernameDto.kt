@@ -1,25 +1,23 @@
-package com.back.domain.member.dto;
+package com.back.domain.member.dto
 
-import com.back.domain.member.entity.Member;
+import com.back.domain.member.entity.Member
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-
-public record MemberWithUsernameDto(
-        int id,
-        String name,
-        String username,
-        String nickname,
-        LocalDateTime createDate,
-        LocalDateTime modifyDate
+@JvmRecord
+data class MemberWithUsernameDto(
+    val id: Int,
+    val name: String,
+    val username: String,
+    val nickname: String,
+    val createDate: LocalDateTime,
+    val modifyDate: LocalDateTime
 ) {
-    public MemberWithUsernameDto(Member member) {
-        this(
-                member.getId(),
-                member.getName(),
-                member.getUsername(),
-                member.getNickname(),
-                member.getCreateDate(),
-                member.getModifyDate()
-        );
-    }
+    constructor(member: Member) : this(
+        member.id,
+        member.name,
+        member.username,
+        member.nickname,
+        member.createDate,
+        member.modifyDate
+    )
 }

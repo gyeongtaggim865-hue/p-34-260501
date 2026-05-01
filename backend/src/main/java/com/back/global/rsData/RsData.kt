@@ -1,18 +1,16 @@
-package com.back.global.rsData;
+package com.back.global.rsData
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore
 
-public record RsData<T>(
-        String msg,
-        String resultCode,
-        T data
+@JvmRecord
+data class RsData<T>(
+    @JvmField val msg: String?,
+    @JvmField val resultCode: String?,
+    val data: T?
 ) {
-    public RsData(String msg, String resultCode) {
-        this(msg, resultCode, null);
-    }
+    constructor(msg: String?, resultCode: String?) : this(msg, resultCode, null)
 
-    @JsonIgnore
-    public int getStatusCode() {
-        return Integer.parseInt(resultCode.split("-")[0]);
-    }
+    @get:JsonIgnore
+    val statusCode: Int
+        get() = resultCode!!.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0].toInt()
 }

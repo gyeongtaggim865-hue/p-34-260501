@@ -1,29 +1,25 @@
-package com.back.domain.post.post.dto;
+package com.back.domain.post.post.dto
 
-import com.back.domain.post.post.entity.Post;
+import com.back.domain.post.post.entity.Post
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-
-
-public record PostDto(
-        int id,
-        String title,
-        String content,
-        int authorId,
-        String authorName,
-        LocalDateTime createDate,
-        LocalDateTime modifyDate
+@JvmRecord
+data class PostDto(
+    val id: Int,
+    val title: String,
+    val content: String,
+    val authorId: Int,
+    val authorName: String,
+    val createDate: LocalDateTime,
+    val modifyDate: LocalDateTime
 ) {
-
-    public PostDto(Post post) {
-        this(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getAuthor().getId(),
-                post.getAuthor().getName(),
-                post.getCreateDate(),
-                post.getModifyDate()
-        );
-    }
+    constructor(post: Post) : this(
+        post.id,
+        post.title,
+        post.content,
+        post.author.id,
+        post.author.name,
+        post.createDate,
+        post.modifyDate
+    )
 }
