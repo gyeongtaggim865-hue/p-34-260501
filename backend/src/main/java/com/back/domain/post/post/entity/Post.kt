@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor
 import java.util.*
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
 class Post(
     @ManyToOne(fetch = FetchType.LAZY) var author: Member,
     var title: String,

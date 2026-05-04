@@ -1,32 +1,23 @@
-package com.back.domain.member.controller;
+package com.back.domain.member.controller
 
-import com.back.domain.member.dto.MemberWithUsernameDto;
-import com.back.domain.member.service.MemberService;
-import com.back.global.rq.Rq;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import com.back.domain.member.dto.MemberWithUsernameDto
+import com.back.domain.member.entity.Member
+import com.back.domain.member.service.MemberService
+import com.back.global.rq.Rq
+import lombok.RequiredArgsConstructor
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import kotlin.collections.map
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/adm/members")
-public class ApiV1AdmMemberController {
-
-    private final MemberService memberService;
-    private final Rq rq;
-
+class ApiV1AdmMemberController(
+    private val memberService: MemberService
+) {
     @GetMapping
-    public List<MemberWithUsernameDto> list() {
-
+    fun list(): List<MemberWithUsernameDto?> {
         return memberService.findAll()
-                .stream()
-                .map(MemberWithUsernameDto::new)
-                .toList();
-
+            .map {MemberWithUsernameDto(it)}
     }
-
-
 }

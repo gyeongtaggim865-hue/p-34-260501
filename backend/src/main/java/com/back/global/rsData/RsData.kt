@@ -2,10 +2,9 @@ package com.back.global.rsData
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 
-@JvmRecord
 data class RsData<T>(
-    @JvmField val msg: String?,
-    @JvmField val resultCode: String?,
+    val msg: String?,
+    val resultCode: String?,
     val data: T?
 ) {
     constructor(msg: String?, resultCode: String?) : this(msg, resultCode, null)

@@ -17,7 +17,6 @@ import java.util.function.Predicate
 import java.util.function.Supplier
 
 @Component
-@RequiredArgsConstructor
 class Rq(
     private val request: HttpServletRequest,
     private val response: HttpServletResponse

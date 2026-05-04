@@ -5,20 +5,16 @@ import com.back.domain.member.service.MemberService
 import com.back.global.exception.ServiceException
 import com.back.global.rq.Rq
 import jakarta.servlet.FilterChain
-import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import lombok.RequiredArgsConstructor
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import java.io.IOException
-import java.util.function.Supplier
+
 @Component
-@RequiredArgsConstructor
 class CustomAuthenticationFilter(
     private val memberService: MemberService,
     private val rq: Rq
@@ -110,16 +106,15 @@ class CustomAuthenticationFilter(
         if (member == null) {
             member = memberService
                 .findByApiKey(apiKey)
-                .orElseThrow {
-                    ServiceException(
+                ?: throw
+                ServiceException(
                         "401-3",
                         "API 키가 유효하지 않습니다."
-                    )
-                }
+                )
         }
 
         if (isAccessTokenExists && !isAccessTokenValid) {
-            val newAccessToken = memberService.genAccessToken(member)
+            val newAccessToken = memberService.genAccessToken(member!!)
             rq.addCookie("accessToken", newAccessToken)
             rq.setHeader("accessToken", newAccessToken)
         }

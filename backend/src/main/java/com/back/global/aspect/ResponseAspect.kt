@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component
 
 @Aspect
 @Component
-@RequiredArgsConstructor
 class ResponseAspect(
     private val response: HttpServletResponse
 ) {

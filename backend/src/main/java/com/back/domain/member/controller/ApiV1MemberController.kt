@@ -1,108 +1,109 @@
-package com.back.domain.member.controller;
+package com.back.domain.member.controller
 
-import com.back.domain.member.dto.MemberDto;
-import com.back.domain.member.entity.Member;
-import com.back.domain.member.service.MemberService;
-import com.back.global.exception.ServiceException;
-import com.back.global.rq.Rq;
-import com.back.global.rsData.RsData;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import com.back.domain.member.dto.MemberDto
+import com.back.domain.member.entity.Member
+import com.back.domain.member.service.MemberService
+import com.back.global.exception.ServiceException
+import com.back.global.extention.getOrThrow
+import com.back.global.rq.Rq
+import com.back.global.rsData.RsData
+import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
+import lombok.RequiredArgsConstructor
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/members")
-@RequiredArgsConstructor
-public class ApiV1MemberController {
-    private final MemberService memberService;
-    private final Rq rq;
-    private final HttpServletResponse response;
+class ApiV1MemberController(
+    private val memberService: MemberService,
+    private val rq: Rq
+) {
 
-    record MemberJoinReqBody(
-            String username,
-            String password,
-            String nickname
-    ) {
-    }
+    data class MemberJoinReqBody(
+        @field:NotBlank @field:Size(min = 2, max = 30) val username: String,
+        @field:NotBlank @field:Size(min = 2, max = 30) val password: String,
+        @field:NotBlank @field:Size(min = 2, max = 30) val nickname: String
+    )
 
-    record MemberJoinResBody(
-            MemberDto memberDto
-    ) {
-    }
+    data class MemberJoinResBody(
+        val memberDto: MemberDto?
+    )
 
     @PostMapping("/join")
-    public RsData<MemberDto> join(@RequestBody @Valid MemberJoinReqBody reqBody) {
+    fun join(
+        @RequestBody @Valid reqBody: @Valid MemberJoinReqBody)
+    : RsData<MemberJoinResBody> {
+        val member = memberService.join(
+            reqBody.username,
+            reqBody.password,
+            reqBody.nickname
+        )
 
-        Member member = memberService.join(reqBody.username, reqBody.password, reqBody.nickname);
-
-        return new RsData(
-                "회원가입이 완료되었습니다. %s님 환영합니다.".formatted(member.getName()),
-                "201-1",
-                new MemberJoinResBody(
-                        new MemberDto(member)
-                )
-        );
+        return RsData(
+            "201-1",
+            "회원가입이 완료되었습니다. ${reqBody.nickname}님 환영합니다.",
+            MemberJoinResBody(
+                MemberDto(member)
+            )
+        )
     }
 
-    record MemberLoginReqBody(
-            String username,
-            String password
-    ) {
-    }
+    data class MemberLoginReqBody(
+        val username: String,
+        val password: String
+    )
 
-    record MemberLoginResBody(
-            String apiKey,
-            String accessToken
-    ) {
-    }
+    data class MemberLoginResBody(
+        val apiKey: String,
+        val accessToken: String
+    )
 
     @PostMapping("/login")
-    public RsData<MemberLoginResBody> login(@RequestBody @Valid MemberLoginReqBody reqBody) {
+    fun login(@RequestBody @Valid reqBody: @Valid MemberLoginReqBody): RsData<MemberLoginResBody> {
+        val actor: Member = memberService.findByUsername(reqBody.username)
+            ?: throw ServiceException(
+                "404-1",
+                "존재하지 않는 회원입니다."
+            )
 
-        Member actor = memberService.findByUsername(reqBody.username).orElseThrow(
-                () -> new ServiceException("401-1", "존재하지 않는 아이디입니다.")
-        );
+        memberService.checkPassword(reqBody.password, actor.password)
 
-        memberService.checkPassword(reqBody.password, actor.getPassword());
+        rq.addCookie("apiKey", actor.apiKey)
+        val accessToken = memberService.genAccessToken(actor)
+        rq.addCookie("accessToken", accessToken)
 
-        rq.addCookie("apiKey", actor.getApiKey());
-        String accessToken = memberService.genAccessToken(actor);
-        rq.addCookie("accessToken", accessToken);
-
-        return new RsData(
-                "%s님 환영합니다.".formatted(actor.getName()),
-                "200-1",
-                new MemberLoginResBody(
-                        actor.getApiKey(),
-                        accessToken
-                )
-        );
+        return RsData(
+            "${actor.name}님 환영합니다.",
+            "200-1",
+            MemberLoginResBody(
+                actor.apiKey,
+                accessToken
+            )
+        )
     }
 
     @DeleteMapping("/logout")
-    public RsData<Void> logout() {
+    fun logout(): RsData<Void> {
+        rq.deleteCookie("apiKey")
+        rq.deleteCookie("accessToken")
 
-        rq.deleteCookie("apiKey");
-        rq.deleteCookie("accessToken");
-
-        return new RsData(
-                "로그아웃 되었습니다.",
-                "200-1"
-        );
+        return RsData(
+            "로그아웃 되었습니다.",
+            "200-1"
+        )
     }
 
     @GetMapping("/me")
-    public MemberDto me() {
-
+    fun me(): MemberDto {
         // 인증 작업이 없다
 
-        Member tmpActor = rq.getActor(); // user1 정보
+        val tmpActor = rq.actor // user1 정보
 
         // 내 전체 회원 정보 조회가 목적
-        Member realActor = memberService.findById(tmpActor.getId()).get();
+        val realActor = memberService.findById(tmpActor.id).getOrThrow()
 
-        return new MemberDto(realActor);
-
+        return MemberDto(realActor)
     }
 }

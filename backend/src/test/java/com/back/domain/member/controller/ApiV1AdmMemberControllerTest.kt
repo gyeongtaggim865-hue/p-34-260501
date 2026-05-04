@@ -1,63 +1,64 @@
-package com.back.domain.member.controller;
+package com.back.domain.member.controller
 
-import com.back.domain.member.entity.Member;
-import com.back.domain.member.repository.MemberRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
-
-import static org.hamcrest.Matchers.containsInRelativeOrder;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import com.back.domain.member.entity.Member
+import com.back.domain.member.repository.MemberRepository
+import com.back.global.extention.getOrThrow
+import org.hamcrest.Matchers
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class ApiV1AdmMemberControllerTest {
+class ApiV1AdmMemberControllerTest(
+    private val mvc: MockMvc,
+    private val memberRepository: MemberRepository
+) {
 
-    @Autowired
-    private MockMvc mvc;
-
-    @Autowired
-    private MemberRepository memberRepository;
 
     @Test
     @DisplayName("회원 다건 조회")
-    void t1() throws Exception {
+    @Throws(Exception::class)
+    fun t1() {
+        val actor: Member = memberRepository.findByUsername("admin").getOrThrow()
 
-        Member actor = memberRepository.findByUsername("admin").get();
+        val resultActions = mvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/adm/members")
+                    .header(
+                        "Authorization", "Bearer ${actor.apiKey}"
+                    )
+            )
+            .andDo(MockMvcResultHandlers.print())
 
-        ResultActions resultActions = mvc
-                .perform(
-                        get("/api/v1/adm/members")
-                                .header(
-                                        "Authorization", "Bearer %s".formatted(actor.getApiKey())
-                                )
+        resultActions
+            .andExpect(MockMvcResultMatchers.handler().handlerType(ApiV1AdmMemberController::class.java))
+            .andExpect(MockMvcResultMatchers.handler().methodName("list"))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+
+        resultActions
+            .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(5))
+            .andExpect(
+                MockMvcResultMatchers.jsonPath(
+                    "$[*].id",
+                    Matchers.containsInRelativeOrder<Int?>(1, 5)
                 )
-                .andDo(print());
-
-        resultActions
-                .andExpect(handler().handlerType(ApiV1AdmMemberController.class))
-                .andExpect(handler().methodName("list"))
-                .andExpect(status().isOk());
-
-        resultActions
-                .andExpect(jsonPath("$.length()").value(5))
-                .andExpect(jsonPath("$[*].id", containsInRelativeOrder(1, 5)))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].createDate").exists())
-                .andExpect(jsonPath("$[0].modifyDate").exists())
-                .andExpect(jsonPath("$[0].nickname").value("시스템"))
-                .andExpect(jsonPath("$[0].username").value("system"));
+            )
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(1))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].createDate").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].modifyDate").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].nickname").value("시스템"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].username").value("system"))
 
 
         // 하나 또는 2개 정도만 검증
@@ -77,22 +78,22 @@ public class ApiV1AdmMemberControllerTest {
 
     @Test
     @DisplayName("회원 다건 조회, 권한이 없는 경우")
-    void t2() throws Exception {
+    @Throws(Exception::class)
+    fun t2() {
+        val actor: Member = memberRepository.findByUsername("user1").getOrThrow()
 
-        Member actor = memberRepository.findByUsername("user1").get();
-
-        ResultActions resultActions = mvc
-                .perform(
-                        get("/api/v1/adm/members")
-                                .header(
-                                        "Authorization", "Bearer %s".formatted(actor.getApiKey())
-                                )
-                )
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/adm/members")
+                    .header(
+                        "Authorization", "Bearer ${actor.apiKey}"
+                    )
+            )
+            .andDo(MockMvcResultHandlers.print())
 
         resultActions
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.resultCode").value("403-1"))
-                .andExpect(jsonPath("$.msg").value("권한이 없습니다."));
+            .andExpect(MockMvcResultMatchers.status().isForbidden())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value("403-1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.msg").value("권한이 없습니다."))
     }
 }

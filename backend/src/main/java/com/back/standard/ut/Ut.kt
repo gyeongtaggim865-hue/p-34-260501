@@ -1,75 +1,70 @@
-package com.back.standard.ut;
+package com.back.standard.ut
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ClaimsBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.security.Keys
+import java.nio.charset.StandardCharsets
+import java.security.Key
+import java.util.*
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Date;
-import java.util.Map;
 
-public class Ut {
-    public static class jwt {
-        public static String toString(String secret, long expireSeconds, Map<String, Object> body) {
-            ClaimsBuilder claimsBuilder = Jwts.claims();
+object Ut {
+    object jwt {
+        fun toString(secret: String, expireSeconds: Long, body: Map<String, Any>): String {
+            val claimsBuilder = Jwts.claims()
 
-            for (Map.Entry<String, Object> entry : body.entrySet()) {
-                claimsBuilder.add(entry.getKey(), entry.getValue());
+            for (entry in body.entries) {
+                claimsBuilder.add(entry.key, entry.value)
             }
 
-            Claims claims = claimsBuilder.build();
+            val claims = claimsBuilder.build()
 
-            Date issuedAt = new Date();
-            Date expiration = new Date(issuedAt.getTime() + 1000L * expireSeconds);
+            val issuedAt = Date()
+            val expiration = Date(issuedAt.getTime() + 1000L * expireSeconds)
 
-            Key secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+            val secretKey: Key = Keys.hmacShaKeyFor(secret.toByteArray())
 
-            String jwt = Jwts.builder()
-                    .claims(claims)
-                    .issuedAt(issuedAt)
-                    .expiration(expiration)
-                    .signWith(secretKey)
-                    .compact();
+            val jwt = Jwts.builder()
+                .claims(claims)
+                .issuedAt(issuedAt)
+                .expiration(expiration)
+                .signWith(secretKey)
+                .compact()
 
-            return jwt;
+            return jwt
         }
 
-        public static boolean isValid(String jwt, String secret) {
-
-            byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-            SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
+        fun isValid(jwt: String?, secret: String): Boolean {
+            val keyBytes = secret.toByteArray(StandardCharsets.UTF_8)
+            val secretKey = Keys.hmacShaKeyFor(keyBytes)
 
             try {
                 Jwts
-                        .parser()
-                        .verifyWith(secretKey)
-                        .build()
-                        .parse(jwt)
-                        .getPayload();
+                    .parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parse(jwt)
+                    .getPayload()
 
-                return true;
-            } catch (Exception e) {
-                return false;
+                return true
+            } catch (e: Exception) {
+                return false
             }
         }
 
-        public static Map<String, Object> payloadOrNull(String jwt, String secret) {
-            byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-            SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
+        fun payloadOrNull(jwt: String, secret: String): Map<String, Any>? {
+            val keyBytes = secret.toByteArray(StandardCharsets.UTF_8)
+            val secretKey = Keys.hmacShaKeyFor(keyBytes)
 
-            if(isValid(jwt, secret)) {
-                return (Map<String, Object>)Jwts
-                        .parser()
-                        .verifyWith(secretKey)
-                        .build()
-                        .parse(jwt)
-                        .getPayload();
+            if (isValid(jwt, secret)) {
+                return Jwts
+                    .parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parse(jwt)
+                    .getPayload() as Map<String, Any>
             }
 
-            return null;
+            return null
         }
     }
 }
