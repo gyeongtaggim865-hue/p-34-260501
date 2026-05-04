@@ -1,41 +1,34 @@
-package com.back.global.entity;
+package com.back.global.entity
 
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import lombok.AccessLevel;
-import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
+import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.LocalDateTime
+import java.util.Objects
 
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
-public abstract class BaseEntity {
-
+@EntityListeners(AuditingEntityListener::class)
+abstract class BaseEntity(
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    @Setter(AccessLevel.PROTECTED)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Int
+) {
 
     @CreatedDate
-    private LocalDateTime createDate;
+    lateinit var createDate: LocalDateTime
 
     @LastModifiedDate
-    private LocalDateTime modifyDate;
+    lateinit var modifyDate: LocalDateTime
 
-    public Integer getId() {
-        return id;
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val that = other as BaseEntity
+        return id == that.id
     }
 
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public LocalDateTime getModifyDate() {
-        return modifyDate;
+    override fun hashCode(): Int {
+        return Objects.hashCode(id)
     }
 }

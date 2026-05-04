@@ -93,8 +93,8 @@ public class ApiV1PostControllerTest {
         Post post = postRepository.findById(targetId).get();
 
         resultActions
-                .andExpect(jsonPath("$.createDate").value(matchesPattern(post.getCreateDate().toString().replaceAll("0+$", "") + ".*")))
-                .andExpect(jsonPath("$.modifyDate").value(matchesPattern(post.getModifyDate().toString().replaceAll("0+$", "") + ".*")));
+                .andExpect(jsonPath("$.createDate").value(matchesPattern(post.createDate.toString().replaceAll("0+$", "") + ".*")))
+                .andExpect(jsonPath("$.modifyDate").value(matchesPattern(post.modifyDate.toString().replaceAll("0+$", "") + ".*")));
 
 //        Post post = postRepository.findById(targetId).get();
 //        resultActions
@@ -278,7 +278,7 @@ public class ApiV1PostControllerTest {
         String accessToken = Ut.jwt.toString(
                 secretPattern,
                 expiration,
-                Map.of("id", author.getId(), "username", author.getUsername())
+                Map.of("id", author.id, "username", author.getUsername())
         );
 
         ResultActions resultActions = mvc
@@ -334,8 +334,8 @@ public class ApiV1PostControllerTest {
         // 선택적 검증
         Post post = postRepository.findById(targetId).get();
 
-        assertThat(post.getTitle()).isEqualTo(title);
-        assertThat(post.getContent()).isEqualTo(content);
+        assertThat(post.title).isEqualTo(title);
+        assertThat(post.content).isEqualTo(content);
     }
 
     @Test

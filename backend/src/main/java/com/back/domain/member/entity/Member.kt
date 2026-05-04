@@ -1,68 +1,42 @@
-package com.back.domain.member.entity;
+package com.back.domain.member.entity
 
-import com.back.global.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import lombok.NoArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.List;
+import com.back.global.entity.BaseEntity
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import lombok.NoArgsConstructor
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 
 @Entity
 @NoArgsConstructor
-public class Member extends BaseEntity {
-
+class Member(
     @Column(unique = true)
-    private String username;
-    private String password;
-
-    private String nickname;
+    var username: String,
+    var password: String,
+    var nickname: String,
     @Column(unique = true)
-    private String apiKey;
+    var apiKey: String
 
-    public Member(String username, String password, String nickname, String apiKey) {
-        this.username = username;
-        this.password = password;
-        this.nickname = nickname;
-        this.apiKey = apiKey;
+) : BaseEntity(0) {
+
+    constructor(id: Int, username: String, nickname: String)
+    : this(username, "", nickname, ""){
+        this.id = id
+        this.username = username
+        this.nickname = nickname
     }
 
-    public Member(int id, String username, String nickname) {
-        this.setId(id);
-        this.username = username;
-        this.nickname = nickname;
-    }
+    val name: String
+        get() = this.username
 
-    public String getName() {
-        return nickname;
-    }
+    val isAdmin: Boolean
+        get() = "admin" == username
 
-    public boolean isAdmin() {
-        return "admin".equals(username);
-    }
-
-    public List<SimpleGrantedAuthority> getAuthorities() {
-        if (isAdmin()) {
-            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        } else {
-            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    val authorities: List<SimpleGrantedAuthority>
+        get() {
+            return if (isAdmin) {
+                listOf(SimpleGrantedAuthority("ROLE_ADMIN"))
+            } else {
+                listOf(SimpleGrantedAuthority("ROLE_USER"))
+            }
         }
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
 }

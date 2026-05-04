@@ -80,7 +80,7 @@ public class AuthTokenServiceTest {
 
         assertThat(payload).containsAllEntriesOf(
                 Map.of(
-                        "id", member1.getId(),
+                        "id", member1.id,
                         "username", member1.getUsername()
                 )
         );

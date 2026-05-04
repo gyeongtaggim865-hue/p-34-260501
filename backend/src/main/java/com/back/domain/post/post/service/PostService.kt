@@ -1,52 +1,49 @@
-package com.back.domain.post.post.service;
+package com.back.domain.post.post.service
 
-import com.back.domain.member.entity.Member;
-import com.back.domain.post.post.entity.Post;
-import com.back.domain.post.post.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
+import com.back.domain.member.entity.Member
+import com.back.domain.post.post.entity.Post
+import com.back.domain.post.post.repository.PostRepository
+import lombok.RequiredArgsConstructor
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 @RequiredArgsConstructor
-public class PostService {
-
-    private final PostRepository postRepository;
+class PostService(
+    private val postRepository: PostRepository
+) {
 
     @Transactional
-    public Post write(Member author, String title, String content) {
-        Post post = new Post(author, title, content);
-        return postRepository.save(post);
+    fun write(author: Member, title: String, content: String): Post {
+        val post = Post(author, title, content)
+        return postRepository.save<Post>(post)
     }
 
-    public Post modify(int id, String title, String content) {
-        Post post = postRepository.findById(id).get();
-        post.update(title, content);
+    fun modify(id: Int, title: String, content: String): Post =
+        postRepository.findById(id).get().apply {
+            update(title, content)
+        }
 
-        return post;
+    fun deleteById(id: Int) {
+        postRepository.deleteById(id)
     }
 
-    public void deleteById(int id) {
-        postRepository.deleteById(id);
+    //Todo Optional 제거
+    fun findById(id: Int): Optional<Post> {
+        return postRepository.findById(id)
     }
 
-    public Optional<Post> findById(int id) {
-        return postRepository.findById(id);
+    fun count(): Long {
+        return postRepository.count()
     }
 
-    public long count() {
-        return postRepository.count();
+    fun findAll(): List<Post> {
+        return postRepository.findAll()
     }
 
-    public List<Post> findAll() {
-        return postRepository.findAll();
-    }
-
-    public void flush() {
-        postRepository.flush();
+    fun flush() {
+        postRepository.flush()
     }
 }
 

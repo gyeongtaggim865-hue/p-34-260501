@@ -1,11 +1,11 @@
-package com.back.domain.member.repository;
+package com.back.domain.member.repository
 
-import com.back.domain.member.entity.Member;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.back.domain.member.entity.Member
+import org.springframework.data.jpa.repository.JpaRepository
+import java.util.*
 
-import java.util.Optional;
-
-public interface MemberRepository extends JpaRepository<Member, Integer> {
-    Optional<Member> findByUsername(String username);
-    Optional<Member> findByApiKey(String apiKey);
+interface MemberRepository : JpaRepository<Member, Int> {
+    //Todo Optional 제거
+    fun findByUsername(username: String): Optional<Member?>
+    fun findByApiKey(apiKey: String): Optional<Member?>
 }
